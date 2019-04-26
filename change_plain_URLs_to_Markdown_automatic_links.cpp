@@ -22,37 +22,33 @@ char continue_or_exit_program();
 
 int main()
 {
+  // Variable definition
+  int file_line_count = 0;
+  string URL_component_1 = "://";
+  string URL_component_2 = ".";
+  string URL_component_3 = " ";
+  string two_consecutive_spaces = "  ";
+
+  // Vector definition
+  vector<string> markdown_converted_file_contents;
+  vector<string> modified_markdown_converted_file_contents; // Temporary vector
+  
   // Variable declaration
   string link_conversion_filename;
+  char user_continue_choice;
+  string line_of_file;
+  string modified_line_of_file_with_plain_url; // Temporary variable
+  string modified_line_of_file_with_two_consecutive_trailing_spaces; // Temporary variable
   
   cout << "This program modifies a file to change any plain URLs into Markdown automatic hyperlinks." << endl;
 
   fstream link_conversion_file;
-  
-  // Variable declaration
-  char user_continue_choice = 'Y';
 
-  while (toupper(user_continue_choice) == 'Y')
+  do
   {
     // User input
     cout << "Enter a filename: ";
     cin >> link_conversion_filename;
-    
-    // Variable definition
-    int file_line_count = 0;
-    string URL_component_1 = "://";
-    string URL_component_2 = ".";
-    string URL_component_3 = " ";
-    string two_consecutive_spaces = "  ";
-    
-    // Variable declaration
-    string line_of_file;
-    string modified_line_of_file_with_plain_url; // Temporary variable
-    string modified_line_of_file_with_two_consecutive_trailing_spaces; // Temporary variable
-    
-    // Vector definition
-    vector<string> markdown_converted_file_contents;
-    vector<string> modified_markdown_converted_file_contents; // Temporary vector
     
     // Opening a file for transput
     link_conversion_file.open(link_conversion_filename, ios::in);
@@ -126,12 +122,15 @@ int main()
     else
       cout << "No plain URLs were found." << endl;
     
+    // Clearing contents of “markdown_converted_file_contents” vector
+    markdown_converted_file_contents.clear();
+    
     // Closing a file
     link_conversion_file.close();
     
     cout << "Modify another file?" << endl;
     user_continue_choice = continue_or_exit_program();
-  }
+  } while (toupper(user_continue_choice) == 'Y');
 
   return 0;
 }
