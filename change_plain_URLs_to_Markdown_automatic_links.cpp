@@ -9,6 +9,7 @@
 // https://stackoverflow.com/questions/874134/find-out-if-string-ends-with-another-string-in-c/874160#874160
 // https://stackoverflow.com/questions/1525535/delete-all-items-from-a-c-stdvector/1525546#1525546
 // https://stackoverflow.com/questions/3867890/count-character-occurrences-in-a-string/3871346#3871346
+// https://stackoverflow.com/questions/5468346/how-to-get-the-element-in-vector-using-the-specified-position-in-c/5468388#5468388
 
 #include <algorithm> // Required for the *count* function template.
 #include <cctype> // Required for the *toupper* function.
@@ -31,6 +32,7 @@ int main()
   const string TWO_CONSECUTIVE_SPACES = "  ";
 
   // Vector definition
+  vector<string> unaltered_file_contents;
   vector<string> markdown_converted_file_contents;
   vector<string> modified_markdown_converted_file_contents; // Temporary vector
   
@@ -38,8 +40,13 @@ int main()
   int file_line_count;
   int space_character_count;
   string link_conversion_filename;
+  string one_or_more_consecutive_space_characters;
   char user_continue_choice;
   string line_of_file;
+  int plain_url_found_count;
+  bool plain_url_found;
+  int two_consecutive_trailing_spaces_found_count;
+  int current_line_number;
   string modified_line_of_file_with_plain_url; // Temporary variable
   string modified_line_of_file_with_two_consecutive_trailing_spaces; // Temporary variable
   
@@ -71,83 +78,113 @@ int main()
     link_conversion_file.close();
     link_conversion_file.open(link_conversion_filename, ios::in | ios::out);
 
+    link_conversion_file.close();
+    link_conversion_file.open(link_conversion_filename, ios::in | ios::out);
+
     if (file_line_count == 1)
     {
       std::getline(link_conversion_file, line_of_file);
       cout << "The file contains only one line." << endl;
       // Determining the number of space characters in a line
-      cout << line_of_file << endl;
       space_character_count = std::count(line_of_file.begin(), line_of_file.end(), ' ');
       cout << "The line contains " << space_character_count << " spaces." << endl;
+
+      // Setting the number of space characters to zero
+      one_or_more_consecutive_space_characters = "";
+      // Creating a string made up of space characters with a length equal to the number of space characters in a line
+      if (space_character_count >= 1)
+      {
+        for (int loop_counter = 0 ; loop_counter < space_character_count ; loop_counter++)
+          one_or_more_consecutive_space_characters += " ";
+      }
+      
       // Determining if a line has a plain URL
-      if (line_of_file.find(URL_COMPONENT_1) != std::string::npos && line_of_file.find(URL_COMPONENT_2) != std::string::npos && (space_character_count == 0 || (space_character_count >= 1 && line_of_file.find(' ') == (line_of_file.length() - space_character_count))))
+      if (line_of_file.find(URL_COMPONENT_1) != std::string::npos && line_of_file.find(URL_COMPONENT_2) != std::string::npos && (space_character_count == 0 || (space_character_count >= 1 && line_of_file.find(one_or_more_consecutive_space_characters) == (line_of_file.length() - space_character_count))) && line_of_file.rfind("<", 0) == std::string::npos && line_of_file.find(">", 0) == std::string::npos)
       {
         cout << "The line has a plain URL." << endl;
         // Determining if a line has any trailing spaces
-        if (line_of_file.find(' ') == (line_of_file.length() - space_character_count))
+        if (line_of_file.find(one_or_more_consecutive_space_characters) == (line_of_file.length() - space_character_count))
         {
           cout << "The line has at least one trailing space." << endl;
           // Removing any trailing spaces from a line
-          modified_line_of_file_with_plain_url = line_of_file.erase((line_of_file.length() - space_character_count), space_character_count);
+          modified_line_of_file_with_plain_url = line_of_file.substr(0, line_of_file.size() - space_character_count);
           line_of_file = modified_line_of_file_with_plain_url;
         }
       // Adding inequality signs to beginning and end of the current line to change plain URL into Markdown automatic link
       line_of_file = "<" + line_of_file + ">";
 
-      // Without the following two lines of code, the text file is appended instead of overwritten
       link_conversion_file.close();
-      link_conversion_file.open(link_conversion_filename, ios::in | ios::out);
+      link_conversion_file.open(link_conversion_filename, ios::out);
       
       // Overwriting existing contents of text file with contents of 'line_of_file' variable
-      link_conversion_file << line_of_file << "\n";
+      link_conversion_file << line_of_file;
       }
     }
     else if (file_line_count > 1)
     {
-      // Variable definition
-      int plain_url_found_count = 0;
-      int two_consecutive_trailing_spaces_found_count = 0;
-      int current_line_number = 0;
-      
-      // Iteration through each line of a text file, detecting any plain URLs and changing them into Markdown automatic links. All lines are added to a vector as string elements, regardless of whether they were changed or not.
+      // Setting variable values to zero
+      plain_url_found_count = 0;
+      two_consecutive_trailing_spaces_found_count = 0;
+      current_line_number = 0;
+
+      // Iteration through each line of a text file, adding all lines to a vector as string elements
       while (std::getline(link_conversion_file, line_of_file))
       {
-        current_line_number += 1;
-        // Removing two consecutive trailing spaces from any lines that have them
-        if (line_of_file.length() >= TWO_CONSECUTIVE_SPACES.length() && line_of_file.find(TWO_CONSECUTIVE_SPACES, (line_of_file.length() - TWO_CONSECUTIVE_SPACES.length())) != std::string::npos)
-        {
-          two_consecutive_trailing_spaces_found_count += 1;
-          cout << "Two consecutive trailing spaces were found on line " << current_line_number << "." << endl;
-          modified_line_of_file_with_two_consecutive_trailing_spaces = line_of_file.erase((line_of_file.length() - TWO_CONSECUTIVE_SPACES.length()),  TWO_CONSECUTIVE_SPACES.length());
-          line_of_file = modified_line_of_file_with_two_consecutive_trailing_spaces;
-        }
-        // Adding inequality signs to the beginning and end of plain URLs
-        if (line_of_file.find(URL_COMPONENT_1) != std::string::npos && line_of_file.find(URL_COMPONENT_2) != std::string::npos && line_of_file.find(URL_COMPONENT_3) == std::string::npos && line_of_file.rfind("<", 0) == std::string::npos && line_of_file.find(">", 0) == std::string::npos)
-        {
-          plain_url_found_count += 1;
-          cout << "A plain URL was found on line " << current_line_number << "." << endl;
-          // Adding inequality signs to beginning and end of the current line to change plain URL into Markdown automatic link
-          modified_line_of_file_with_plain_url = "<" + line_of_file + ">";
-          line_of_file = modified_line_of_file_with_plain_url;
-        }
-        // Adding string elements to “markdown_converted_file_contents” vector
-        markdown_converted_file_contents.push_back(line_of_file);
+        // Adding string elements to “unaltered_file_contents” vector
+        unaltered_file_contents.push_back(line_of_file);
       }
       
       link_conversion_file.close();
       link_conversion_file.open(link_conversion_filename, ios::in | ios::out);
-      
-      // Adding two consecutive trailing spaces to lines meeting specific criteria: do not add two consecutive trailing spaces to lines followed by a blank line, or to blank lines. The temporary “modified_markdown_converted_file_contents” vector is used for this.
-      for (int loop_counter = 0 ; loop_counter <= file_line_count ; loop_counter++)
+
+      // Iteration through each line of a text file, detecting any plain URLs and changing them into Markdown automatic links. All lines are added to a vector as string elements, regardless of whether they were changed or not.
+      while (std::getline(link_conversion_file, line_of_file))
       {
-        if (!(markdown_converted_file_contents[loop_counter].empty() == false && markdown_converted_file_contents[loop_counter + 1].empty() == true) && markdown_converted_file_contents[loop_counter].empty() == false)
+        current_line_number += 1;
+        
+        plain_url_found = false;
+
+        // Determining the number of space characters in a line
+        cout << line_of_file << endl;
+        space_character_count = std::count(line_of_file.begin(), line_of_file.end(), ' ');
+
+        // Setting the number of space characters to zero
+        one_or_more_consecutive_space_characters = "";
+        // Creating a string made up of space characters with a length equal to the number of space characters in a line
+        if (space_character_count >= 1)
         {
-          // cout << "Line " << loop_counter + 1 << endl;
-          modified_markdown_converted_file_contents.push_back((markdown_converted_file_contents[loop_counter] + "  "));
+          for (int loop_counter = 0 ; loop_counter < space_character_count ; loop_counter++)
+            one_or_more_consecutive_space_characters += " ";
         }
-        else
-          modified_markdown_converted_file_contents.push_back(markdown_converted_file_contents[loop_counter]);
+        
+        // Determining if a line has a plain URL
+        if (line_of_file.find(URL_COMPONENT_1) != std::string::npos && line_of_file.find(URL_COMPONENT_2) != std::string::npos && (space_character_count == 0 || (space_character_count >= 1 && line_of_file.find(one_or_more_consecutive_space_characters) == (line_of_file.length() - space_character_count))) && line_of_file.rfind("<", 0) == std::string::npos && line_of_file.find(">", 0) == std::string::npos)
+        {
+          plain_url_found_count += 1;
+          plain_url_found = true;
+          cout << "The line has a plain URL." << endl;
+          // Determining if a line has any trailing spaces
+          if (line_of_file.find(one_or_more_consecutive_space_characters) == (line_of_file.length() - space_character_count))
+          {
+            cout << "The line has at least one trailing space." << endl;
+            // Removing any trailing spaces from a line
+            modified_line_of_file_with_plain_url = line_of_file.substr(0, line_of_file.size() - space_character_count);
+            line_of_file = modified_line_of_file_with_plain_url;
+          }
+        }
+        // Adding string elements to “markdown_converted_file_contents” vector
+        markdown_converted_file_contents.push_back(line_of_file);
+
+        // Adding inequality signs to beginning and end of the current line if it is a plain URL, changing the plain URL into a Markdown automatic link. Also adding two consecutive trailing spaces to lines meeting specific criteria: do not add two consecutive trailing spaces to lines followed by a blank line, or to blank lines. The temporary “modified_markdown_converted_file_contents” vector is used for this.
+        if (plain_url_found == true && unaltered_file_contents[current_line_number].empty() == false)
+          line_of_file = "<" + line_of_file + ">  ";
+        else if (plain_url_found == true)
+          line_of_file = "<" + line_of_file + ">";
+        modified_markdown_converted_file_contents.push_back(line_of_file);
       }
+      
+      link_conversion_file.close();
+      link_conversion_file.open(link_conversion_filename, ios::in | ios::out);
       
       // Clearing contents of “markdown_converted_file_contents” vector and adding string elements to it from temporary “modified_markdown_converted_file_contents” vector
       markdown_converted_file_contents.clear();
