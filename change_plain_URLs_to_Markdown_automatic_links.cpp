@@ -8,7 +8,9 @@
 // https://stackoverflow.com/questions/6406356/how-to-write-vector-values-to-a-file/6406393#6406393
 // https://stackoverflow.com/questions/874134/find-out-if-string-ends-with-another-string-in-c/874160#874160
 // https://stackoverflow.com/questions/1525535/delete-all-items-from-a-c-stdvector/1525546#1525546
+// https://stackoverflow.com/questions/3867890/count-character-occurrences-in-a-string/3871346#3871346
 
+#include <algorithm> // Required for the *count* function template.
 #include <cctype> // Required for the *toupper* function.
 #include <fstream> // Required for the *fstream*, and *ifstream*, *ofstream* classes.
 #include <iostream> // Required for the *cin* and *cout* objects.
@@ -28,14 +30,13 @@ int main()
   const string URL_COMPONENT_3 = " ";
   const string TWO_CONSECUTIVE_SPACES = "  ";
 
-  // Variable definition
-  int file_line_count = 0;
-
   // Vector definition
   vector<string> markdown_converted_file_contents;
   vector<string> modified_markdown_converted_file_contents; // Temporary vector
   
   // Variable declaration
+  int file_line_count;
+  int space_character_count;
   string link_conversion_filename;
   char user_continue_choice;
   string line_of_file;
@@ -58,6 +59,9 @@ int main()
     // Setting the file line count to zero
     file_line_count = 0;
     
+    // Setting the space character count to zero
+    space_character_count = 0;
+    
     // Calculation of the file's line count
     while (std::getline(link_conversion_file, line_of_file))
     {
@@ -69,7 +73,34 @@ int main()
 
     if (file_line_count == 1)
     {
-      cout << "The file contains only one line, and was not modified." << endl;
+      std::getline(link_conversion_file, line_of_file);
+      cout << "The file contains only one line." << endl;
+      // Determining the number of space characters in a line
+      cout << line_of_file << endl;
+      space_character_count = std::count(line_of_file.begin(), line_of_file.end(), ' ');
+      cout << "The line contains " << space_character_count << " spaces." << endl;
+      // Determining if a line has a plain URL
+      if (line_of_file.find(URL_COMPONENT_1) != std::string::npos && line_of_file.find(URL_COMPONENT_2) != std::string::npos && (space_character_count == 0 || (space_character_count >= 1 && line_of_file.find(' ') == (line_of_file.length() - space_character_count))))
+      {
+        cout << "The line has a plain URL." << endl;
+        // Determining if a line has any trailing spaces
+        if (line_of_file.find(' ') == (line_of_file.length() - space_character_count))
+        {
+          cout << "The line has at least one trailing space." << endl;
+          // Removing any trailing spaces from a line
+          modified_line_of_file_with_plain_url = line_of_file.erase((line_of_file.length() - space_character_count), space_character_count);
+          line_of_file = modified_line_of_file_with_plain_url;
+        }
+      // Adding inequality signs to beginning and end of the current line to change plain URL into Markdown automatic link
+      line_of_file = "<" + line_of_file + ">";
+
+      // Without the following two lines of code, the text file is appended instead of overwritten
+      link_conversion_file.close();
+      link_conversion_file.open(link_conversion_filename, ios::in | ios::out);
+      
+      // Overwriting existing contents of text file with contents of 'line_of_file' variable
+      link_conversion_file << line_of_file << "\n";
+      }
     }
     else if (file_line_count > 1)
     {
