@@ -22,12 +22,12 @@ char continue_or_exit_program();
 
 int main()
 {
-  // Variable definition
+  // Constant definition
   int file_line_count = 0;
-  string URL_component_1 = "://";
-  string URL_component_2 = ".";
-  string URL_component_3 = " ";
-  string two_consecutive_spaces = "  ";
+  const string URL_COMPONENT_1 = "://";
+  const string URL_COMPONENT_2 = ".";
+  const string URL_COMPONENT_3 = " ";
+  const string TWO_CONSECUTIVE_SPACES = "  ";
 
   // Vector definition
   vector<string> markdown_converted_file_contents;
@@ -72,15 +72,15 @@ int main()
     {
       current_line_number += 1;
       // Removing two consecutive trailing spaces from any lines that have them
-      if (line_of_file.length() >= two_consecutive_spaces.length() && line_of_file.find(two_consecutive_spaces, (line_of_file.length() - two_consecutive_spaces.length())) != std::string::npos)
+      if (line_of_file.length() >= TWO_CONSECUTIVE_SPACES.length() && line_of_file.find(TWO_CONSECUTIVE_SPACES, (line_of_file.length() - TWO_CONSECUTIVE_SPACES.length())) != std::string::npos)
       {
         two_consecutive_trailing_spaces_found_count += 1;
         cout << "Two consecutive trailing spaces were found on line " << current_line_number << "." << endl;
-        modified_line_of_file_with_two_consecutive_trailing_spaces = line_of_file.erase((line_of_file.length() - two_consecutive_spaces.length()),  two_consecutive_spaces.length());
+        modified_line_of_file_with_two_consecutive_trailing_spaces = line_of_file.erase((line_of_file.length() - TWO_CONSECUTIVE_SPACES.length()),  TWO_CONSECUTIVE_SPACES.length());
         line_of_file = modified_line_of_file_with_two_consecutive_trailing_spaces;
       }
       // Adding inequality signs to the beginning and end of plain URLs
-      if (line_of_file.find(URL_component_1) != std::string::npos && line_of_file.find(URL_component_2) != std::string::npos && line_of_file.find(URL_component_3) == std::string::npos && line_of_file.rfind("<", 0) == std::string::npos && line_of_file.find(">", 0) == std::string::npos)
+      if (line_of_file.find(URL_COMPONENT_1) != std::string::npos && line_of_file.find(URL_COMPONENT_2) != std::string::npos && line_of_file.find(URL_COMPONENT_3) == std::string::npos && line_of_file.rfind("<", 0) == std::string::npos && line_of_file.find(">", 0) == std::string::npos)
       {
         plain_url_found_count += 1;
         cout << "A plain URL was found on line " << current_line_number << "." << endl;
