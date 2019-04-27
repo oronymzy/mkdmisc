@@ -43,6 +43,7 @@ int main()
   char user_continue_choice;
   string line_of_file;
   int plain_url_found_count;
+  int trailing_space_removal_count;
   bool plain_url_found; // Flag variable
   bool plain_url_found_at_least_once; // Flag variable
   bool trailing_space_found; // Flag variable
@@ -141,6 +142,7 @@ int main()
       current_line_number = 0;
       current_index_number = 0;
       trailing_space_addition_count = 0;
+      trailing_space_removal_count = 0;
       
       // Setting flag variables to false
       plain_url_found_at_least_once = false;
@@ -193,6 +195,7 @@ int main()
             trailing_space_found_at_least_once = true;
             // Removing any trailing spaces from a line
             modified_line_of_file_with_plain_url = line_of_file.substr(0, line_of_file.size() - space_character_count);
+            trailing_space_removal_count += space_character_count;
             line_of_file = modified_line_of_file_with_plain_url;
           }
         }
@@ -215,7 +218,7 @@ int main()
       
       // Clearing contents of “markdown_converted_file_contents” vector and adding string elements to it from temporary “modified_markdown_converted_file_contents” vector
       markdown_converted_file_contents.clear();
-      for (int loop_counter = 0 ; loop_counter <= file_line_count ; loop_counter++)
+      for (int loop_counter = 0 ; loop_counter < file_line_count ; loop_counter++)
         markdown_converted_file_contents.push_back(modified_markdown_converted_file_contents[loop_counter]);
 
       if (plain_url_found_count > 0)
@@ -234,10 +237,10 @@ int main()
         else if (plain_url_found_count > 1)
           cout << " " << plain_url_found_count << " plain URLs were changed into automatic links";
         
-        if (space_character_count == 1)
+        if (trailing_space_removal_count == 1)
           cout << ", 1 trailing space was removed";
-        else if (space_character_count > 1)
-          cout << ", " << space_character_count << " trailing spaces were removed";
+        else if (trailing_space_removal_count > 1)
+          cout << ", " << trailing_space_removal_count << " trailing spaces were removed";
         
         cout << ", and " << trailing_space_addition_count << " trailing spaces were added." << endl;
       }
@@ -248,10 +251,10 @@ int main()
         else if (plain_url_found_count > 1)
           cout << " " << plain_url_found_count << " plain URLs were changed into automatic links";
         
-        if (space_character_count == 1)
+        if (trailing_space_removal_count == 1)
           cout << ", and 1 trailing space was removed.";
-        else if (space_character_count > 1)
-          cout << ", and " << space_character_count << " trailing spaces were removed.";
+        else if (trailing_space_removal_count > 1)
+          cout << ", and " << trailing_space_removal_count << " trailing spaces were removed.";
         else
           cout << ".";
         
