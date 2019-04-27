@@ -27,10 +27,8 @@ char continue_or_exit_program();
 int main()
 {
   // Constant definition
-  const string URL_COMPONENT_1 = "://";
-  const string URL_COMPONENT_2 = ".";
-  const string URL_COMPONENT_3 = " ";
-  const string TWO_CONSECUTIVE_SPACES = "  ";
+  const string COLON_FOLLOWED_BY_TWO_SLASHES = "://";
+  const string DOT_CHARACTER = ".";
 
   // Vector definition
   vector<string> markdown_converted_file_contents;
@@ -39,17 +37,19 @@ int main()
   // Variable declaration
   int file_line_count;
   int space_character_count;
+  int trailing_space_addition_count;
   string link_conversion_filename;
   string one_or_more_consecutive_space_characters;
   char user_continue_choice;
   string line_of_file;
   int plain_url_found_count;
-  bool plain_url_found;
-  int two_consecutive_trailing_spaces_found_count;
+  bool plain_url_found; // Flag variable
+  bool plain_url_found_at_least_once; // Flag variable
+  bool trailing_space_found; // Flag variable
+  bool trailing_space_found_at_least_once; // Flag variable
   int current_line_number;
   int current_index_number;
   string modified_line_of_file_with_plain_url; // Temporary variable
-  string modified_line_of_file_with_two_consecutive_trailing_spaces; // Temporary variable
   
   cout << "This program modifies a file to change any plain URLs into Markdown automatic hyperlinks." << endl;
 
@@ -82,10 +82,13 @@ int main()
     if (file_line_count == 1)
     {
       std::getline(link_conversion_file, line_of_file);
-      cout << "The file contains only one line." << endl;
+      
+      // Setting flag variables to false
+      plain_url_found = false;
+      trailing_space_found = false;
+
       // Determining the number of space characters in a line
       space_character_count = std::count(line_of_file.begin(), line_of_file.end(), ' ');
-      cout << "The line contains " << space_character_count << " spaces." << endl;
 
       // Setting the number of space characters to zero
       one_or_more_consecutive_space_characters = "";
@@ -97,13 +100,13 @@ int main()
       }
       
       // Determining if a line has a plain URL
-      if (line_of_file.find(URL_COMPONENT_1) != std::string::npos && line_of_file.find(URL_COMPONENT_2) != std::string::npos && (space_character_count == 0 || (space_character_count >= 1 && line_of_file.find(one_or_more_consecutive_space_characters) == (line_of_file.length() - space_character_count))) && line_of_file.rfind("<", 0) == std::string::npos && line_of_file.find(">", 0) == std::string::npos)
+      if (line_of_file.find(COLON_FOLLOWED_BY_TWO_SLASHES) != std::string::npos && line_of_file.find(DOT_CHARACTER) != std::string::npos && (space_character_count == 0 || (space_character_count >= 1 && line_of_file.find(one_or_more_consecutive_space_characters) == (line_of_file.length() - space_character_count))) && line_of_file.rfind("<", 0) == std::string::npos && line_of_file.find(">", 0) == std::string::npos)
       {
-        cout << "The line has a plain URL." << endl;
+        plain_url_found = true;
         // Determining if a line has any trailing spaces
         if (line_of_file.find(one_or_more_consecutive_space_characters) == (line_of_file.length() - space_character_count))
         {
-          cout << "The line has at least one trailing space." << endl;
+          trailing_space_found = true;
           // Removing any trailing spaces from a line
           modified_line_of_file_with_plain_url = line_of_file.substr(0, line_of_file.size() - space_character_count);
           line_of_file = modified_line_of_file_with_plain_url;
@@ -117,14 +120,31 @@ int main()
       // Overwriting existing contents of text file with contents of 'line_of_file' variable
       link_conversion_file << line_of_file;
       }
+      
+      // Informational output for user
+      cout << "The file contains only one line.";
+      if (plain_url_found == true && trailing_space_found == true && space_character_count == 1)
+        cout << " A plain URL was changed into an automatic link, and " << space_character_count << " trailing space was removed." << endl;
+      else if (plain_url_found == true && trailing_space_found == true && space_character_count > 1)
+        cout << " A plain URL was changed into an automatic link, and " << space_character_count << " trailing spaces were removed." << endl;
+      else if (plain_url_found == true && trailing_space_found == false)
+        cout << " A plain URL was changed into an automatic link. No trailing spaces were found." << endl;
+      else if (plain_url_found == false)
+        cout << " A plain URL was not found, and no changes were made to the file." << endl;
+      else
+        cout << " Something went wrong." << endl;
     }
     else if (file_line_count > 1)
     {
       // Setting variable values to zero
       plain_url_found_count = 0;
-      two_consecutive_trailing_spaces_found_count = 0;
       current_line_number = 0;
       current_index_number = 0;
+      trailing_space_addition_count = 0;
+      
+      // Setting flag variables to false
+      plain_url_found_at_least_once = false;
+      trailing_space_found_at_least_once = false;
 
       // Iteration through each line of a text file, adding all lines to a vector as string elements, unaltered
       while (std::getline(link_conversion_file, line_of_file))
@@ -140,14 +160,15 @@ int main()
       while (std::getline(link_conversion_file, line_of_file))
       {
         current_line_number += 1;
+
+        // Setting flag variables to false
+        plain_url_found = false;
+        trailing_space_found = false;
         
         // Set variable referring to index number, which starts with zero, as opposed to the current line number, which starts with one
         current_index_number = current_line_number - 1;
-        
-        plain_url_found = false;
 
         // Determining the number of space characters in a line
-        cout << line_of_file << endl;
         space_character_count = std::count(line_of_file.begin(), line_of_file.end(), ' ');
 
         // Setting the number of space characters to zero
@@ -160,15 +181,16 @@ int main()
         }
         
         // Determining if a line has a plain URL
-        if (line_of_file.find(URL_COMPONENT_1) != std::string::npos && line_of_file.find(URL_COMPONENT_2) != std::string::npos && (space_character_count == 0 || (space_character_count >= 1 && line_of_file.find(one_or_more_consecutive_space_characters) == (line_of_file.length() - space_character_count))) && line_of_file.rfind("<", 0) == std::string::npos && line_of_file.find(">", 0) == std::string::npos)
+        if (line_of_file.find(COLON_FOLLOWED_BY_TWO_SLASHES) != std::string::npos && line_of_file.find(DOT_CHARACTER) != std::string::npos && (space_character_count == 0 || (space_character_count >= 1 && line_of_file.find(one_or_more_consecutive_space_characters) == (line_of_file.length() - space_character_count))) && line_of_file.rfind("<", 0) == std::string::npos && line_of_file.find(">", 0) == std::string::npos)
         {
           plain_url_found_count += 1;
           plain_url_found = true;
-          cout << "The line has a plain URL." << endl;
+          plain_url_found_at_least_once = true;
           // Determining if a line has any trailing spaces
           if (line_of_file.find(one_or_more_consecutive_space_characters) == (line_of_file.length() - space_character_count))
           {
-            cout << "The line has at least one trailing space." << endl;
+            trailing_space_found = true;
+            trailing_space_found_at_least_once = true;
             // Removing any trailing spaces from a line
             modified_line_of_file_with_plain_url = line_of_file.substr(0, line_of_file.size() - space_character_count);
             line_of_file = modified_line_of_file_with_plain_url;
@@ -179,7 +201,10 @@ int main()
 
         // Adding inequality signs to beginning and end of the current line if it is a plain URL, changing the plain URL into a Markdown automatic link. Also adding two consecutive trailing spaces to lines meeting specific criteria: do not add two consecutive trailing spaces to lines followed by a blank line, or to blank lines. The temporary “modified_markdown_converted_file_contents” vector is used for this.
         if (plain_url_found == true && markdown_converted_file_contents[current_index_number + 1].empty() == false)
+        {
+          trailing_space_addition_count += 2;
           line_of_file = "<" + line_of_file + ">  ";
+        }
         else if (plain_url_found == true)
           line_of_file = "<" + line_of_file + ">";
         modified_markdown_converted_file_contents.push_back(line_of_file);
@@ -195,19 +220,73 @@ int main()
 
       if (plain_url_found_count > 0)
       {
-        cout << plain_url_found_count << " plain URLs were changed in " << link_conversion_filename << ". " << two_consecutive_trailing_spaces_found_count << " lines had two consecutive trailing spaces removed in " << link_conversion_filename << "." << endl;
         // Iteration through string elements of a vector, overwriting existing contents of text file with contents of vector.
         for (vector<string>::const_iterator loop_counter = markdown_converted_file_contents.begin() ; loop_counter != markdown_converted_file_contents.end() ; loop_counter++)
           link_conversion_file << *loop_counter << "\n";
       }
+      
+      // Informational output for user
+      cout << "The file contains " << file_line_count << " lines.";
+      if (plain_url_found_at_least_once == true && trailing_space_found_at_least_once == true && trailing_space_addition_count != 0)
+      {
+        if (plain_url_found_count == 1)
+          cout << " 1 plain URL was changed into an automatic link";
+        else if (plain_url_found_count > 1)
+          cout << " " << plain_url_found_count << " plain URLs were changed into automatic links";
+        
+        if (space_character_count == 1)
+          cout << ", 1 trailing space was removed";
+        else if (space_character_count > 1)
+          cout << ", " << space_character_count << " trailing spaces were removed";
+        
+        cout << ", and " << trailing_space_addition_count << " trailing spaces were added." << endl;
+      }
+      else if (plain_url_found_at_least_once == true && trailing_space_found_at_least_once == true && trailing_space_addition_count == 0)
+      {
+        if (plain_url_found_count == 1)
+          cout << " 1 plain URL was changed into an automatic link";
+        else if (plain_url_found_count > 1)
+          cout << " " << plain_url_found_count << " plain URLs were changed into automatic links";
+        
+        if (space_character_count == 1)
+          cout << ", and 1 trailing space was removed.";
+        else if (space_character_count > 1)
+          cout << ", and " << space_character_count << " trailing spaces were removed.";
+        else
+          cout << ".";
+        
+        cout << " No trailing spaces were added." << endl;
+      }
+      else if (plain_url_found_at_least_once == true && trailing_space_found_at_least_once == false && trailing_space_addition_count != 0)
+      {
+        if (plain_url_found_count == 1)
+          cout << " 1 plain URL was changed into an automatic link.";
+        else if (plain_url_found_count > 1)
+          cout << " " << plain_url_found_count << " plain URLs were changed into automatic links.";
+        
+        cout << " No trailing spaces were removed.";
+        
+        cout << " " << trailing_space_addition_count << " trailing spaces were added." << endl;
+      }
+      else if (plain_url_found_at_least_once == true && trailing_space_found_at_least_once == false && trailing_space_addition_count == 0)
+      {
+        if (plain_url_found_count == 1)
+          cout << " 1 plain URL was changed into an automatic link.";
+        else if (plain_url_found_count > 1)
+          cout << " " << plain_url_found_count << " plain URLs were changed into automatic links.";
+        
+        cout << " No trailing spaces were removed or added." << endl;
+      }
+      else if (plain_url_found_at_least_once == false && trailing_space_found_at_least_once == false && trailing_space_addition_count == 0)
+        cout << " No plain URLs were found, and no changes were made to the file." << endl;
       else
-        cout << "No plain URLs were found." << endl;
+        cout << " Something went wrong." << endl;
       
       // Clearing contents of “markdown_converted_file_contents” vector
       markdown_converted_file_contents.clear();
     }
     else
-      cout << "Something went wrong.";
+      cout << "Something went wrong." << endl;
     
     // Closing a file
     link_conversion_file.close();
