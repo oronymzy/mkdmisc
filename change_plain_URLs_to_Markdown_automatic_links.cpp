@@ -11,6 +11,7 @@
 // https://stackoverflow.com/questions/3867890/count-character-occurrences-in-a-string/3871346#3871346
 // https://stackoverflow.com/questions/5468346/how-to-get-the-element-in-vector-using-the-specified-position-in-c/5468388#5468388
 // https://stackoverflow.com/questions/2624232/how-to-change-a-particular-element-of-a-c-stl-vector/2624242#2624242
+// https://stackoverflow.com/questions/25225948/how-to-check-if-a-file-exists-in-c-with-fstreamopen/25225993#25225993
 
 #include <algorithm> // Required for the *count* function template.
 #include <cctype> // Required for the *toupper* function.
@@ -62,8 +63,18 @@ int main()
     cout << "Enter a filename: ";
     cin >> link_conversion_filename;
     
-    // Opening a file for transput
+    // Opening a file for input
     link_conversion_file.open(link_conversion_filename, ios::in);
+    
+    // Input validation with while-loop construct: it must be possible for the file referred to by the filename to be opened.
+    while (link_conversion_file.fail())
+    {
+      cout << "Invalid filename: “" << link_conversion_filename << "” cannot be opened. Enter a filename: ";
+      cin >> link_conversion_filename;
+      // Opening a file for input
+      link_conversion_file.close();
+      link_conversion_file.open(link_conversion_filename, ios::in);
+    }
     
     // Setting the file line count to zero
     file_line_count = 0;
