@@ -10,6 +10,7 @@
 // https://stackoverflow.com/questions/1525535/delete-all-items-from-a-c-stdvector/1525546#1525546
 // https://stackoverflow.com/questions/3867890/count-character-occurrences-in-a-string/3871346#3871346
 // https://stackoverflow.com/questions/5468346/how-to-get-the-element-in-vector-using-the-specified-position-in-c/5468388#5468388
+// https://stackoverflow.com/questions/2624232/how-to-change-a-particular-element-of-a-c-stl-vector/2624242#2624242
 
 #include <algorithm> // Required for the *count* function template.
 #include <cctype> // Required for the *toupper* function.
@@ -32,7 +33,6 @@ int main()
   const string TWO_CONSECUTIVE_SPACES = "  ";
 
   // Vector definition
-  vector<string> unaltered_file_contents;
   vector<string> markdown_converted_file_contents;
   vector<string> modified_markdown_converted_file_contents; // Temporary vector
   
@@ -47,6 +47,7 @@ int main()
   bool plain_url_found;
   int two_consecutive_trailing_spaces_found_count;
   int current_line_number;
+  int current_index_number;
   string modified_line_of_file_with_plain_url; // Temporary variable
   string modified_line_of_file_with_two_consecutive_trailing_spaces; // Temporary variable
   
@@ -75,9 +76,6 @@ int main()
       file_line_count += 1;
     }
     
-    link_conversion_file.close();
-    link_conversion_file.open(link_conversion_filename, ios::in | ios::out);
-
     link_conversion_file.close();
     link_conversion_file.open(link_conversion_filename, ios::in | ios::out);
 
@@ -126,12 +124,13 @@ int main()
       plain_url_found_count = 0;
       two_consecutive_trailing_spaces_found_count = 0;
       current_line_number = 0;
+      current_index_number = 0;
 
-      // Iteration through each line of a text file, adding all lines to a vector as string elements
+      // Iteration through each line of a text file, adding all lines to a vector as string elements, unaltered
       while (std::getline(link_conversion_file, line_of_file))
       {
-        // Adding string elements to “unaltered_file_contents” vector
-        unaltered_file_contents.push_back(line_of_file);
+        // Adding string elements to “markdown_converted_file_contents” vector
+        markdown_converted_file_contents.push_back(line_of_file);
       }
       
       link_conversion_file.close();
@@ -141,6 +140,9 @@ int main()
       while (std::getline(link_conversion_file, line_of_file))
       {
         current_line_number += 1;
+        
+        // Set variable referring to index number, which starts with zero, as opposed to the current line number, which starts with one
+        current_index_number = current_line_number - 1;
         
         plain_url_found = false;
 
@@ -173,10 +175,10 @@ int main()
           }
         }
         // Adding string elements to “markdown_converted_file_contents” vector
-        markdown_converted_file_contents.push_back(line_of_file);
+        markdown_converted_file_contents.at(current_index_number) = line_of_file;
 
         // Adding inequality signs to beginning and end of the current line if it is a plain URL, changing the plain URL into a Markdown automatic link. Also adding two consecutive trailing spaces to lines meeting specific criteria: do not add two consecutive trailing spaces to lines followed by a blank line, or to blank lines. The temporary “modified_markdown_converted_file_contents” vector is used for this.
-        if (plain_url_found == true && unaltered_file_contents[current_line_number].empty() == false)
+        if (plain_url_found == true && markdown_converted_file_contents[current_index_number + 1].empty() == false)
           line_of_file = "<" + line_of_file + ">  ";
         else if (plain_url_found == true)
           line_of_file = "<" + line_of_file + ">";
